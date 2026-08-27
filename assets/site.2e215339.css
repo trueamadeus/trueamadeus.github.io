@@ -1,0 +1,498 @@
+/* ══════════════════════════════════════════════════════════════════════
+   ОБОЛОЧКА САЙТА «trueamadeus»
+
+   Тема книги (book.css) подключена ПЕРЕД этим файлом и отвечает за вёрстку
+   текста: заголовки, реплики, эпиграфы, орнаменты, капитель. Здесь — только
+   то, чего у страницы книги быть не может: бумага, мера, переключатели,
+   шапка, подвал.
+
+   Ни одного придуманного цвета: палитра «Хвоя · Дым · Латунь» взята из
+   tokens.json темы. Добавлены лишь бумага и чернила — их EPUB намеренно не
+   задаёт, потому что там это территория ридера. В вебе ридер — эта страница.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ------------------------------------------------------------ ПАЛИТРА - */
+/* Светлая — база. Тёмная объявляется ДВАЖДЫ теми же значениями: под
+   системную настройку (с оговоркой «если читатель не выбрал светлую
+   вручную») и под ручной выбор. Та же конструкция, что в теме книги. */
+:root {
+  --paper:      #faf8f4;   /* бумага: тёплый небелый, чтобы не бил в глаза */
+  --paper-bar:  250 248 244;
+  --ink:        #242926;   /* чернила ТЕМНЕЕ «приглушённого графита» темы
+                              (#364239) — иначе жирное начертание вышло бы
+                              светлее обычного текста */
+  --ink-soft:   #5f6a62;
+  --pine:       #5d6f62;
+  --smoke:      #75808c;
+  --brass:      #8a7648;
+  --orn:        #9d8a5f;
+  --rule:       #e4e0d5;
+  --tint:       rgba(93,111,98,.07);
+}
+:root[data-theme="sepia"] {
+  --paper: #f4ecdc; --paper-bar: 244 236 220;
+  --ink: #322b21; --ink-soft: #6a5f4d;
+  --rule: #e0d4bb; --tint: rgba(138,118,72,.09);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="sepia"]) {
+    --paper: #15181a; --paper-bar: 21 24 26;
+    --ink: #c2c9c3; --ink-soft: #939c96;
+    --pine: #8e9a91; --smoke: #9ea6af; --brass: #ada081; --orn: #b7a87f;
+    --rule: #2b3033; --tint: rgba(142,154,145,.10);
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #15181a; --paper-bar: 21 24 26;
+  --ink: #c2c9c3; --ink-soft: #939c96;
+  --pine: #8e9a91; --smoke: #9ea6af; --brass: #ada081; --orn: #b7a87f;
+  --rule: #2b3033; --tint: rgba(142,154,145,.10);
+}
+
+/* ---------------------------------------------------------- ГАРНИТУРЫ - */
+/* Тело — выбор читателя, ровно как в книге. Разница в том, что в вебе выбор
+   надо ДАТЬ: у браузера, в отличие от ридера, своего меню шрифтов нет. */
+/* Georgia ВПЕРЕДИ стека, а не Palatino: кнопка в настройках так и подписана.
+   Прежняя подпись «Системный» — взгляд со стороны сборки: это МЫ знаем, что
+   шрифт берётся у системы. Читатель видит просто список гарнитур, первая из
+   которых выбрана за него, и слово «системный» ему ничего не сообщает.
+   Поэтому все три названы тем, что они есть. Georgia стоит и на Windows, и
+   на macOS — подпись честна для подавляющего большинства; Palatino запасной. */
+:root                    { --font-body: "Alegreya", Georgia, "Palatino Linotype", serif; }
+:root[data-font="serif"] { --font-body: Georgia, "Palatino Linotype", "New York", serif; }
+:root[data-font="sans"]  { --font-body: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+
+/* КОМПЕНСАЦИЯ РОСТА СТРОЧНЫХ. У гарамонов он мал, и при одном кегле такой
+   текст выглядит мельче системного сериффа. Множитель ведёт корневой размер
+   и живёт ТОЛЬКО под своей гарнитурой: выбрал читатель системный или
+   гротеск — множитель гасится до единицы, иначе они раздулись бы. */
+:root { --font-scale: 1.065; }
+:root[data-font="serif"], :root[data-font="sans"] { --font-scale: 1; }
+
+/* Кегль ведёт КОРНЕВОЙ размер, а не .book: вся тема книги размечена в rem
+   (поля, отбивки, кегли заголовков), поэтому масштабировать надо систему
+   целиком — иначе текст растёт, а воздух вокруг него нет. Оболочка
+   размечена в px и под масштаб не попадает; это и требуется.
+
+   Считается от 100%, а не от 17px: 100% — это размер шрифта, выставленный
+   ЧИТАТЕЛЕМ в браузере. Кто поднял его из-за зрения, поднимет и книгу.
+
+   ТРИ множителя, и у каждого своя роль — смешивать их нельзя:
+     1.0625        — базовая надбавка сайта, константа;
+     --fs          — ползунок читателя, ЧИСТЫЙ множитель от единицы
+                     (100% = 1). Базу в него подмешивать нельзя: пока
+                     запасное значение было 1.0625, а JS с первого нажатия
+                     ставил 1.05, кнопка «крупнее» УМЕНЬШАЛА текст;
+     --font-scale  — поправка на гарнитуру (см. выше). */
+html {
+  font-size: calc(100% * 1.0625 * var(--fs, 1) * var(--font-scale, 1));
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+/* ВЕС НА ТЁМНОМ ФОНЕ. Светлое на тёмном оптически худеет, и тонким штрихам
+   старого стиля это стоит читаемости. Промежуточный вес возвращает им
+   плотность, не делая текст полужирным. Оговорки те же, что у тёмной темы;
+   системные стеки идут ПОСЛЕ них и при равной специфичности побеждают —
+   у статических начертаний промежуточного веса нет, они бы огрубели. */
+:root { --body-weight: 400; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="sepia"]) { --body-weight: 420; }
+}
+:root[data-theme="dark"] { --body-weight: 420; }
+:root[data-font="serif"], :root[data-font="sans"] { --body-weight: 400; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+}
+.book { font-weight: var(--body-weight, 400); }
+
+/* ------------------------------------------------------------- ПОЛОСА - */
+#progress {
+  position: fixed; inset: 0 auto auto 0; height: 2px; width: 0;
+  background: var(--orn); z-index: 60; transition: width .1s linear;
+}
+
+/* -------------------------------------------------------------- ШАПКА - */
+/* ВСЕГДА НА МЕСТЕ. Прежде пряталась при движении вниз — ради чистого поля
+   чтения. Оказалось, что плата выше выгоды: до настроек и содержания
+   приходилось добираться лишним жестом вверх, а на телефоне этот жест
+   вызывает адресную строку браузера, которая меняет высоту окна и налезает
+   на всплывающую панель. Навигация ломалась ровно там, где понадобилась.
+   46 пикселей постоянного присутствия — честная цена за предсказуемость. */
+#bar {
+  position: fixed; inset: 0 0 auto 0; z-index: 50;
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 16px; height: 46px;
+  background: rgb(var(--paper-bar) / .93);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid transparent;
+  transition: border-color .28s ease;
+  font-family: "Palatino Linotype", "New York", Georgia, serif;
+  hyphens: none;
+}
+#bar.scrolled { border-bottom-color: var(--rule); }
+
+#bar .home {
+  color: var(--pine); text-decoration: none; font-size: 14px;
+  letter-spacing: .04em; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+#bar .home .orn { color: var(--orn); margin-right: .5em; }
+#bar .spring { flex: 1 1 auto; }
+
+.tool {
+  appearance: none; -webkit-appearance: none;
+  background: none; border: 1px solid transparent; border-radius: 6px;
+  color: var(--ink-soft); cursor: pointer;
+  font: 15px/1 "Palatino Linotype", "New York", Georgia, serif;
+  padding: 7px 10px; min-width: 34px;
+}
+.tool:hover { background: var(--tint); color: var(--pine); }
+.tool[aria-expanded="true"] { background: var(--tint); color: var(--pine); }
+.tool:focus-visible, a:focus-visible { outline: 2px solid var(--orn); outline-offset: 2px; }
+
+/* ---------------------------------------------------------- НАСТРОЙКИ - */
+#prefs {
+  position: fixed; top: 52px; right: 12px; z-index: 55;
+  width: 268px; padding: 14px 16px 16px;
+  background: var(--paper); border: 1px solid var(--rule); border-radius: 10px;
+  box-shadow: 0 10px 34px rgb(0 0 0 / .13);
+  font-family: "Palatino Linotype", "New York", Georgia, serif;
+  hyphens: none;
+}
+#prefs[hidden], #toc[hidden] { display: none; }
+#prefs .row { margin-bottom: 13px; }
+#prefs .row:last-child { margin-bottom: 0; }
+#prefs .lab {
+  display: block; margin-bottom: 6px;
+  font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--smoke);
+}
+/* Кнопки переносятся и меряются по содержимому, а не делят строку поровну:
+   подписи разной длины («Без засечек» против «Тьма») при жёстких третях
+   распирали панель — nowrap-текст ниже своей минимальной ширины не сжимается. */
+#prefs .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+#prefs .chip {
+  flex: 1 1 auto; padding: 7px 9px; cursor: pointer;
+  background: none; border: 1px solid var(--rule); border-radius: 6px;
+  color: var(--ink-soft); font: 13px/1.2 inherit; white-space: nowrap;
+}
+/* КНОПКА ШРИФТА — ОБРАЗЕЦ. Каждая набрана той гарнитурой, которую включает,
+   поэтому выбирают глазами, а не по названию: имя «Alegreya» читателю само
+   по себе говорит не больше, чем говорило «Системный». Так подписывают
+   шрифты в книжных читалках. */
+#prefs .chip[data-pref="font"][data-val=""]      { font-family: "Alegreya", Georgia, serif; }
+#prefs .chip[data-pref="font"][data-val="serif"] { font-family: Georgia, "Palatino Linotype", serif; }
+#prefs .chip[data-pref="font"][data-val="sans"]  { font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+
+#prefs .chip:hover { border-color: var(--orn); color: var(--pine); }
+#prefs .chip[aria-pressed="true"] {
+  border-color: var(--pine); color: var(--pine); background: var(--tint);
+}
+/* A− и A+ стоят РЯДОМ, а не по краям панели. Разнесённые на всю ширину,
+   они заставляли гонять курсор через панель на каждый шаг кегля, хотя
+   подбирают размер именно несколькими нажатиями подряд. Показание съезжает
+   влево и распирает строку само. */
+#prefs .stepper { display: flex; align-items: center; gap: 6px; }
+#prefs .stepper output {
+  order: -1;                 /* показание вперёд, кнопки следом — парой */
+  flex: 1 1 auto; text-align: left; font-size: 13px; color: var(--ink-soft);
+}
+#prefs .stepper .chip { flex: 0 0 40px; font-size: 15px; text-align: center; }
+
+/* --------------------------------------------------------- СОДЕРЖАНИЕ - */
+/* Панель открывается СО СТОРОНЫ СВОЕЙ КНОПКИ. Раньше кнопка содержания
+   стояла справа, а список выезжал слева — взгляд шёл за нажатием и не
+   находил результата. Обе панели теперь у правого края; одновременно
+   открытой может быть только одна, так что они не спорят за место. */
+#toc {
+  position: fixed; top: 52px; right: 12px; z-index: 55;
+  width: min(300px, calc(100vw - 24px)); padding: 14px 6px 12px;
+  background: var(--paper); border: 1px solid var(--rule); border-radius: 10px;
+  box-shadow: 0 10px 34px rgb(0 0 0 / .13);
+  font-family: "Palatino Linotype", "New York", Georgia, serif;
+  /* dvh считает ВИДИМУЮ высоту окна: на телефоне vh игнорирует
+     адресную строку, и панель уезжала под неё низом. */
+  max-height: calc(100vh - 70px);
+  max-height: calc(100dvh - 70px);
+  overflow-y: auto; hyphens: none;
+}
+#toc ol { list-style: none; margin: 0; padding: 0; }
+#toc a {
+  display: block; padding: 8px 14px; border-radius: 6px;
+  color: var(--ink-soft); text-decoration: none; font-size: 15px;
+}
+#toc a:hover { background: var(--tint); color: var(--pine); }
+#toc a[aria-current="page"] { color: var(--pine); }
+#toc a[aria-current="page"]::before { content: "✧ "; color: var(--orn); }
+/* Обложка отделена чертой от списка глав: это не раздел книги, а выход
+   из неё. Звёздочку не ставим — она занята отметкой текущей главы. */
+#toc .home-link {
+  border-bottom: 1px solid var(--rule);
+  border-radius: 6px 6px 0 0;
+  margin-bottom: 5px;
+}
+#toc .sep { margin: 8px 14px; border: 0; border-top: 1px solid var(--rule); }
+#toc .dl { font-size: 13px; color: var(--brass); }
+
+/* -------------------------------------------------------------- ТЕКСТ - */
+/* Мера задана в rem, поэтому при смене кегля число знаков в строке
+   держится: растёт шрифт — растёт и колонка. */
+/* МЕРА ЗАВИСИТ ОТ ГАРНИТУРЫ. Число знаков в строке — вот что решает
+   читаемость, а не ширина колонки в пикселях. Гарамон уже системного
+   сериффа почти на пятую часть, и при общей мере в ту же колонку влезало
+   бы 76 знаков против 63 — строка длиннее нормы на ровном месте.
+   Поэтому база меры приезжает из BODY_FONT (измерено по hmtx шрифта), а
+   системные стеки получают свои 34 rem. Переключение шрифта меняет
+   рисунок, но не плотность строки.
+   «Уже» и «шире» — доли от базы, а не абсолютные значения: иначе они
+   ломали бы ту же настройку при другой гарнитуре. */
+:root { --measure-base: 31.3rem; --measure: var(--measure-base); }
+:root[data-font="serif"], :root[data-font="sans"] { --measure-base: 34rem; }
+:root[data-measure="narrow"] { --measure: calc(var(--measure-base) * .85); }
+:root[data-measure="wide"]   { --measure: calc(var(--measure-base) * 1.18); }
+
+.book {
+  max-width: var(--measure, 34rem);
+  margin: 0 auto; padding: 0 1.35rem 3rem;
+}
+
+main { padding-top: 46px; }
+/* Страница без шапки читалки (главная, 404): отбивать нечего. */
+body.bare main { padding-top: 0; }
+
+/* Экранный интерлиньяж — единственное намеренное расхождение с книгой.
+   Значение подставляет build.py (SCREEN_LINE_HEIGHT). */
+.book .ps2, .book .ps3 { line-height: 1.62; }
+
+/* Выключка по ширине — по желанию читателя. Тема книги молчит о выключке
+   намеренно, чтобы выбор остался за читающим; переключатель этот выбор и
+   предъявляет. Переносы в теме уже объявлены, реки не пойдут. */
+:root[data-just="1"] .book .ps2 { text-align: justify; }
+
+.book img { max-width: 100%; height: auto; }
+
+/* Пустой якорь у номера раздела: даёт ссылку вида #razdel-3 и уводит
+   прокрутку из-под шапки. Своего места в строке не занимает. */
+.sec-anchor {
+  display: inline-block; width: 0; height: 0; overflow: hidden;
+  scroll-margin-top: 64px;
+}
+
+/* ---------------------------------------------------------- ПЕРЕХОДЫ - */
+/* Ссылки НЕ растягиваются на половину полосы каждая: подсветка при наведении
+   обязана совпадать с тем, по чему кликают. Раньше стояло flex:1 1 0 —
+   короткое «Персонажи» получало кликабельный прямоугольник во всю половину
+   ширины, и подсветка висела пустым полем вокруг двух слов.
+   Развеску по краям держит space-between, а не растянутые дети. */
+.pager {
+  max-width: var(--measure, 34rem);
+  margin: 0 auto; padding: 2.2rem 1.35rem 0;
+  border-top: 1px solid var(--rule);
+  display: flex; align-items: stretch;
+  justify-content: space-between; gap: 10px; hyphens: none;
+}
+.pager a {
+  flex: 0 1 auto; max-width: 48%;
+  padding: 12px 14px; border-radius: 8px;
+  color: var(--ink-soft); text-decoration: none; font-size: .84rem;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.pager a:hover { background: var(--tint); color: var(--pine); }
+.pager .dir {
+  font-size: .68rem; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--smoke);
+}
+.pager .prev { text-align: left; }
+.pager .next { text-align: right; }
+/* Одинокая ссылка (первая и последняя страницы) встаёт ПО ЦЕНТРУ: прижатая
+   к краю, с пустотой во всю вторую половину полосы, она читалась как сбой
+   вёрстки, а не как замысел. Пустышек-распорок в разметке больше нет. */
+.pager a:only-child { margin-inline: auto; max-width: 70%; text-align: center; }
+.pager a:only-child .dir { text-align: center; }
+
+/* ------------------------------------------------------------ ПОДВАЛ - */
+footer.site {
+  max-width: var(--measure, 34rem);
+  margin: 3.5rem auto 0; padding: 1.6rem 1.35rem 3rem;
+  border-top: 1px solid var(--rule);
+  color: var(--smoke); font-size: .8rem; line-height: 1.7;
+  text-align: center; hyphens: none;
+}
+footer.site a {
+  color: var(--brass); text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+}
+footer.site a:hover { border-bottom-color: var(--orn); }
+footer.site .orn {
+  color: var(--orn); letter-spacing: .25em; display: block; margin-bottom: 1rem;
+}
+footer.site .dot { color: var(--orn); }
+/* Каналы: та же строка, что и остальное, на полтона громче ссылок подвала.
+   Отдельного блока не заводим — минимум значит минимум. */
+footer.site .channels { margin-top: 1.5rem; }
+footer.site .channels a { font-size: .88rem; color: var(--pine); }
+footer.site .channels a:hover { border-bottom-color: var(--pine); }
+
+/* ------------------------------------------------------- «ПРОДОЛЖИТЬ» - */
+#resume {
+  position: fixed; right: 16px; bottom: 16px; z-index: 45;
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-radius: 999px;
+  background: var(--paper); border: 1px solid var(--rule);
+  box-shadow: 0 8px 26px rgb(0 0 0 / .15);
+  font: 13px/1 "Palatino Linotype", "New York", Georgia, serif;
+  color: var(--ink-soft); cursor: pointer; hyphens: none;
+  animation: rise .3s ease both;
+}
+#resume:hover { color: var(--pine); border-color: var(--orn); }
+#resume .x { color: var(--smoke); padding: 0 2px; }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+@media (prefers-reduced-motion: reduce) { #resume { animation: none; } }
+
+/* ═══════════════════════════════════════════════════════════ ГЛАВНАЯ ══ */
+.hero {
+  max-width: 46rem; margin: 0 auto; padding: 2.5rem 1.35rem 0;
+  display: grid; grid-template-columns: minmax(0, 210px) minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 3rem); align-items: center;
+}
+.hero .cover { margin: 0; }
+.hero .cover img {
+  width: 100%; height: auto; display: block; border-radius: 2px;
+  box-shadow: 0 2px 6px rgb(0 0 0 / .12), 0 14px 40px rgb(0 0 0 / .18);
+}
+
+/* Титул набран КЛАССАМИ ТЕМЫ (.book-title, .book-author, .imprint) —
+   орнаменты приезжают из книги сами, я их не рисую.
+
+   ОСЬ. Блок центрирован НАМЕРЕННО, хотя рядом лежит обложка. Орнаменты
+   темы (✧ над титулом, ✧ — ✦ — ✧ под авторами) — симметричные фигуры,
+   рассчитанные на ось: прижатые влево, они висят сбоку от текста и
+   читаются как мусор, а не как обрамление. Титульный лист книги
+   центрирован — здесь то же самое, просто рядом с обложкой.
+
+   ЧТО ГАСИТСЯ. Только h1::after: в теме это «— ✦ — » для заголовков ГЛАВ,
+   и на титуле он лез вторым орнаментом под первым. Родной ✧ — ✦ — ✧
+   титульного листа (.book-author::after) при этом работает. */
+.hero .titleblock { text-align: center; }
+.hero .titleblock .book-title {
+  padding-top: 0; margin: 0; text-align: center;
+  font-size: clamp(1.65rem, 5vw, 2.2rem); letter-spacing: .04em;
+  text-wrap: balance;          /* «Drag-on Dragoon 3 / Story Side», а не
+                                  «Drag-on Dragoon / 3 Story Side» */
+}
+.hero .titleblock .book-title::before { margin-bottom: .8rem; }
+.hero .titleblock .book-title::after { content: none; }   /* см. выше */
+.hero .titleblock .book-author { margin-top: 1rem; font-size: 1rem; }
+.hero .titleblock .book-author::after { margin-top: 1.4rem; }
+.hero .titleblock .alias {
+  margin: 1.4rem 0 0; color: var(--smoke);
+  font-size: .85rem; letter-spacing: .02em; text-wrap: balance;
+}
+.hero .titleblock .imprint { margin: .5rem 0 0; }
+
+.actions {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  margin-top: 1.7rem; justify-content: center;
+}
+.btn {
+  display: inline-flex; align-items: center; gap: .5em;
+  padding: 12px 22px; border-radius: 8px; text-decoration: none;
+  font: 15px/1 "Palatino Linotype", "New York", Georgia, serif;
+  letter-spacing: .03em; border: 1px solid var(--pine); hyphens: none;
+}
+.btn.primary { background: var(--pine); color: var(--paper); }
+.btn.primary:hover { filter: brightness(1.12); }
+.btn.ghost { color: var(--pine); border-color: var(--rule); }
+.btn.ghost:hover { border-color: var(--pine); background: var(--tint); }
+
+.rule-orn {
+  max-width: 46rem; margin: 3.2rem auto 0; padding: 0 1.35rem;
+  display: flex; align-items: center; gap: 1.1rem;
+  color: var(--orn); font-size: .95rem; letter-spacing: .25em;
+}
+.rule-orn::before, .rule-orn::after {
+  content: ""; flex: 1 1 0; border-top: 1px solid var(--rule);
+}
+
+.section { max-width: 46rem; margin: 0 auto; padding: 2.4rem 1.35rem 0; }
+.section > h2 {
+  font-size: .72rem; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--smoke); text-align: center; margin: 0 0 1.5rem;
+  font-weight: normal; hyphens: none;
+}
+
+/* Содержание: список, а не сетка карточек. Строка = раздел. */
+.contents { list-style: none; margin: 0; padding: 0; }
+.contents li { border-bottom: 1px solid var(--rule); }
+.contents li:first-child { border-top: 1px solid var(--rule); }
+.contents a {
+  display: flex; align-items: baseline; gap: .8rem;
+  padding: 15px 10px; text-decoration: none; color: var(--ink);
+}
+.contents a:hover { background: var(--tint); }
+.contents a:hover .name { color: var(--pine); }
+.contents .name { flex: 1 1 auto; font-size: 1.02rem; }
+.contents .meta {
+  color: var(--smoke); font-size: .76rem; letter-spacing: .06em; white-space: nowrap;
+}
+
+/* Скачивание */
+.files { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.files a {
+  display: flex; align-items: center; gap: .9rem;
+  padding: 14px 16px; border: 1px solid var(--rule); border-radius: 8px;
+  text-decoration: none; color: var(--ink);
+}
+.files a:hover { border-color: var(--pine); background: var(--tint); }
+.files .fmt {
+  flex: 0 0 auto; font-size: .95rem; color: var(--pine); letter-spacing: .03em;
+}
+.files .about { flex: 1 1 auto; color: var(--smoke); font-size: .8rem; }
+.files .size {
+  flex: 0 0 auto; color: var(--smoke); font-size: .76rem; letter-spacing: .04em;
+}
+
+
+/* --------------------------------------------------------- СЛУЖЕБНОЕ - */
+.skip {
+  position: absolute; left: -9999px; top: 0; z-index: 70;
+  background: var(--pine); color: var(--paper);
+  padding: 10px 16px; border-radius: 0 0 6px 0; text-decoration: none;
+}
+.skip:focus { left: 0; }
+
+@media print {
+  #bar, #prefs, #toc, #progress, #resume, .pager { display: none !important; }
+  main { padding-top: 0; }
+  .book { max-width: none; }
+}
+
+/* ---------------------------------------------------------- ТЕЛЕФОН -- */
+@media (max-width: 620px) {
+  .hero {
+    grid-template-columns: 1fr; text-align: center;
+    padding-top: 1.8rem; gap: 1.6rem;
+  }
+  .hero .cover { max-width: 172px; margin: 0 auto; }
+  /* центрирование титула здесь не повторяется: оно теперь в базе */
+  .btn { flex: 1 1 auto; justify-content: center; }
+
+  /* ШИРИНА НА УЗКОМ ЭКРАНЕ — ЭТО ПОЛЯ, А НЕ МЕРА.
+     Настройка меняет max-width колонки: 24, 28 и 34 rem. Телефон
+     вертикально — 375 px, и любое из этих значений шире экрана, поэтому
+     ограничение не срабатывает вовсе: ширину диктует экран. Читатель жал
+     кнопки и не видел ничего. Стоило повернуть телефон — и оживало.
+     Здесь та же настройка управляет полями: смысл для читателя тот же
+     («уже — шире»), а результат наконец виден. */
+  :root[data-measure="narrow"] .book { padding-left: 2.4rem; padding-right: 2.4rem; }
+  :root[data-measure="wide"]   .book { padding-left: 0.75rem; padding-right: 0.75rem; }
+  #prefs { right: 8px; left: 8px; width: auto; }
+}
