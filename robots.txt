@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://trueamadeus.github.io/sitemap.xml
