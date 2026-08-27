@@ -119,8 +119,12 @@ body {
 }
 
 /* -------------------------------------------------------------- ШАПКА - */
-/* Прячется при движении вниз, возвращается при движении вверх: в чтении
-   она нужна ровно тогда, когда читатель от текста оторвался. */
+/* ВСЕГДА НА МЕСТЕ. Прежде пряталась при движении вниз — ради чистого поля
+   чтения. Оказалось, что плата выше выгоды: до настроек и содержания
+   приходилось добираться лишним жестом вверх, а на телефоне этот жест
+   вызывает адресную строку браузера, которая меняет высоту окна и налезает
+   на всплывающую панель. Навигация ломалась ровно там, где понадобилась.
+   46 пикселей постоянного присутствия — честная цена за предсказуемость. */
 #bar {
   position: fixed; inset: 0 0 auto 0; z-index: 50;
   display: flex; align-items: center; gap: 12px;
@@ -129,12 +133,11 @@ body {
   -webkit-backdrop-filter: saturate(180%) blur(12px);
   backdrop-filter: saturate(180%) blur(12px);
   border-bottom: 1px solid transparent;
-  transition: transform .28s ease, border-color .28s ease;
+  transition: border-color .28s ease;
   font-family: "Palatino Linotype", "New York", Georgia, serif;
   hyphens: none;
 }
 #bar.scrolled { border-bottom-color: var(--rule); }
-#bar.hidden   { transform: translateY(-100%); }
 
 #bar .home {
   color: var(--pine); text-decoration: none; font-size: 14px;
@@ -215,7 +218,11 @@ body {
   background: var(--paper); border: 1px solid var(--rule); border-radius: 10px;
   box-shadow: 0 10px 34px rgb(0 0 0 / .13);
   font-family: "Palatino Linotype", "New York", Georgia, serif;
-  max-height: calc(100vh - 70px); overflow-y: auto; hyphens: none;
+  /* dvh считает ВИДИМУЮ высоту окна: на телефоне vh игнорирует
+     адресную строку, и панель уезжала под неё низом. */
+  max-height: calc(100vh - 70px);
+  max-height: calc(100dvh - 70px);
+  overflow-y: auto; hyphens: none;
 }
 #toc ol { list-style: none; margin: 0; padding: 0; }
 #toc a {

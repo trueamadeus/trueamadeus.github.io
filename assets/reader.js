@@ -142,7 +142,6 @@
     /* --- полоса прочитанного, прячущаяся шапка --- */
     var bar = document.getElementById('bar');
     var prog = document.getElementById('progress');
-    var last = window.pageYOffset;
     var ticking = false;
 
     function frame() {
@@ -152,16 +151,16 @@
 
       if (prog) prog.style.width = (ratio * 100).toFixed(2) + '%';
 
-      if (bar) {
-        bar.classList.toggle('scrolled', y > 4);
-        /* Прячем только на честном движении вниз и не у самого верха:
-           инерционная прокрутка на телефоне иначе дёргает шапку. */
-        if (y > 160 && y > last + 6) bar.classList.add('hidden');
-        else if (y < last - 6 || y < 80) bar.classList.remove('hidden');
-      }
+      /* ШАПКА НЕ ПРЯЧЕТСЯ. Раньше пряталась при движении вниз — ради
+         чистого поля чтения. Плата оказалась выше выгоды: чтобы открыть
+         настройки или содержание, требовался лишний жест вверх, а на
+         телефоне этот жест ещё и вызывает адресную строку браузера,
+         которая меняет высоту окна и налезает на всплывающую панель.
+         Навигация ломалась ровно тогда, когда понадобилась.
+         Осталась только тонкая черта снизу при отрыве от начала. */
+      if (bar) bar.classList.toggle('scrolled', y > 4);
 
       savePos(ratio);
-      last = y;
       ticking = false;
     }
     window.addEventListener('scroll', function () {
