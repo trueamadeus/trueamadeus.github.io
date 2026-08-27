@@ -61,9 +61,14 @@
    которых выбрана за него, и слово «системный» ему ничего не сообщает.
    Поэтому все три названы тем, что они есть. Georgia стоит и на Windows, и
    на macOS — подпись честна для подавляющего большинства; Palatino запасной. */
-:root                    { --font-body: "Alegreya", Georgia, "Palatino Linotype", serif; }
-:root[data-font="serif"] { --font-body: Georgia, "Palatino Linotype", "New York", serif; }
-:root[data-font="sans"]  { --font-body: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+/* Японские гарнитуры в ХВОСТЕ каждого стека. В книге иероглифов нет ни
+   одного, но в «Заметках о переводе» цитируется оригинал, а ни Alegreya,
+   ни Georgia их не содержат — без запасных браузер взял бы что попало, с
+   чужой высотой строки прямо посреди русской фразы. Включаются они ТОЛЬКО
+   на иероглифах: кириллицу и латиницу по-прежнему ведёт основная. */
+:root                    { --font-body: "Alegreya", Georgia, "Palatino Linotype", "Yu Mincho", "Hiragino Mincho ProN", "Noto Serif JP", serif; }
+:root[data-font="serif"] { --font-body: Georgia, "Palatino Linotype", "New York", "Yu Mincho", "Hiragino Mincho ProN", "Noto Serif JP", serif; }
+:root[data-font="sans"]  { --font-body: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Yu Gothic", "Hiragino Sans", "Noto Sans JP", sans-serif; }
 
 /* КОМПЕНСАЦИЯ РОСТА СТРОЧНЫХ. У гарамонов он мал, и при одном кегле такой
    текст выглядит мельче системного сериффа. Множитель ведёт корневой размер
@@ -281,6 +286,44 @@ body.bare main { padding-top: 0; }
 :root[data-just="1"] .book .ps2 { text-align: justify; }
 
 .book img { max-width: 100%; height: auto; }
+
+/* ═════════════════════════════════════════ ЗАМЕТКИ О ПЕРЕВОДЕ ════════ */
+/* Разбор правок — не проза, а разбор: у него есть повторяющаяся форма, и
+   форму видно. Но собственных приёмов здесь ровно два — оригинал и
+   подпись; всё прочее ведёт тема книги, номер правки идёт её же классом
+   heading-medium, тем самым, что нумерует сцены в главах. */
+
+/* Японский оригинал: строка, ради которой всё и затевалось. Латунью и по
+   центру — как эпиграф, потому что это цитата, а не часть рассуждения. */
+.book .jp {
+  margin: .1rem 0 1.5rem; text-indent: 0;
+  font-size: 1.2rem; line-height: 1.7;
+  text-align: center; color: var(--brass);
+  font-family: "Yu Mincho", "Hiragino Mincho ProN", "Noto Serif JP",
+               "MS Mincho", serif;
+}
+
+/* «Было» и «Стало» — висячей колонкой: глаз сравнивает две редакции по
+   одной вертикали, а не выискивает их в начале строк. */
+.book .n-was, .book .n-now { margin-bottom: .3rem; }
+.book .n-now { margin-bottom: 1.5rem; }
+.book .n-was .lab, .book .n-now .lab {
+  display: inline-block; width: 4.6em;
+  font-size: .7rem; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--smoke);
+}
+.book .n-now .lab { color: var(--pine); }   /* принятая редакция */
+
+/* «Языковой нюанс» и «Что это меняет» — проза, подпись работает зачином
+   в строке, а не колонкой: висячая колонка в 14 знаков съела бы полосу. */
+.book .n-note { margin-bottom: .8rem; }
+.book .n-note .lab { color: var(--pine); }
+
+@media (max-width: 620px) {
+  /* На телефоне колонка в 4.6em отнимает треть строки — подпись уходит
+     на свою строку, сравнение читается сверху вниз. */
+  .book .n-was .lab, .book .n-now .lab { display: block; width: auto; }
+}
 
 /* Пустой якорь у номера раздела: даёт ссылку вида #razdel-3 и уводит
    прокрутку из-под шапки. Своего места в строке не занимает. */
