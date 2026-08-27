@@ -225,6 +225,13 @@ body {
 #toc a:hover { background: var(--tint); color: var(--pine); }
 #toc a[aria-current="page"] { color: var(--pine); }
 #toc a[aria-current="page"]::before { content: "✧ "; color: var(--orn); }
+/* Обложка отделена чертой от списка глав: это не раздел книги, а выход
+   из неё. Звёздочку не ставим — она занята отметкой текущей главы. */
+#toc .home-link {
+  border-bottom: 1px solid var(--rule);
+  border-radius: 6px 6px 0 0;
+  margin-bottom: 5px;
+}
 #toc .sep { margin: 8px 14px; border: 0; border-top: 1px solid var(--rule); }
 #toc .dl { font-size: 13px; color: var(--brass); }
 
@@ -470,5 +477,15 @@ footer.site .channels a:hover { border-bottom-color: var(--pine); }
   .hero .cover { max-width: 172px; margin: 0 auto; }
   /* центрирование титула здесь не повторяется: оно теперь в базе */
   .btn { flex: 1 1 auto; justify-content: center; }
+
+  /* ШИРИНА НА УЗКОМ ЭКРАНЕ — ЭТО ПОЛЯ, А НЕ МЕРА.
+     Настройка меняет max-width колонки: 24, 28 и 34 rem. Телефон
+     вертикально — 375 px, и любое из этих значений шире экрана, поэтому
+     ограничение не срабатывает вовсе: ширину диктует экран. Читатель жал
+     кнопки и не видел ничего. Стоило повернуть телефон — и оживало.
+     Здесь та же настройка управляет полями: смысл для читателя тот же
+     («уже — шире»), а результат наконец виден. */
+  :root[data-measure="narrow"] .book { padding-left: 2.4rem; padding-right: 2.4rem; }
+  :root[data-measure="wide"]   .book { padding-left: 0.75rem; padding-right: 0.75rem; }
   #prefs { right: 8px; left: 8px; width: auto; }
 }
