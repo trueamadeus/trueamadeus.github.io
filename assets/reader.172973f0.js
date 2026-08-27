@@ -139,17 +139,32 @@
       if (e.key === 'Escape') closeAll(null);
     });
 
-    /* --- полоса прочитанного, прячущаяся шапка --- */
+    /* --- полоса прочитанного --- */
     var bar = document.getElementById('bar');
     var prog = document.getElementById('progress');
     var ticking = false;
 
+    /* Полоса меряет книгу, а не страницу. Сборка кладёт в <body> число слов
+       ДО этого раздела, число слов в нём самом и общее по книге; отсюда
+       видно, где читатель находится в 37 тысячах слов целиком. Раньше
+       считалось от текущей страницы: «40% главы» о месте в книге не
+       говорило ничего, а на переходе между главами полоса падала в ноль.
+       Слова, а не страницы, потому что главы очень разной длины: пролог
+       490 слов, глава Апостолов — 11436. */
+    var wBefore = parseFloat(document.body.getAttribute('data-w-before')),
+        wPage   = parseFloat(document.body.getAttribute('data-w-page')),
+        wTotal  = parseFloat(document.body.getAttribute('data-w-total'));
+    var byBook = wTotal > 0 && !isNaN(wBefore) && !isNaN(wPage);
+
     function frame() {
       var y = window.pageYOffset;
       var h = document.documentElement.scrollHeight - window.innerHeight;
-      var ratio = h > 0 ? y / h : 0;
+      var ratio = h > 0 ? y / h : 0;   /* доля СТРАНИЦЫ — ею живёт память места */
 
-      if (prog) prog.style.width = (ratio * 100).toFixed(2) + '%';
+      if (prog) {
+        var shown = byBook ? (wBefore + ratio * wPage) / wTotal : ratio;
+        prog.style.width = (Math.min(1, Math.max(0, shown)) * 100).toFixed(2) + '%';
+      }
 
       /* ШАПКА НЕ ПРЯЧЕТСЯ. Раньше пряталась при движении вниз — ради
          чистого поля чтения. Плата оказалась выше выгоды: чтобы открыть
